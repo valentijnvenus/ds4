@@ -51,8 +51,14 @@ static void check_bulk_exchange(void) {
             struct timeval timeout;
             socklen_t len = sizeof(timeout);
             assert(getsockopt(fd[rank], SOL_SOCKET, SO_RCVTIMEO, &timeout, &len) == 0);
-            assert((uint64_t)timeout.tv_sec * 1000u + timeout.tv_usec / 1000u ==
-                   peer[rank].tp.gate_timeout_ms);
+            const uint64_t got_ms =
+                (uint64_t)timeout.tv_sec * 1000u + timeout.tv_usec / 1000u;
+            /* SO_RCVTIMEO round-trips through jiffies (CLK_TCK=250 -> 4 ms granularity),
+             * so exact millisecond equality is HZ-dependent: a 50 ms request reads back
+             * as 52 ms. The exchange restores the strict gate timeout, so allow one tick
+             * of slack and reject the long arrival timeout. */
+            assert(got_ms + 8u >= peer[rank].tp.gate_timeout_ms &&
+                   got_ms <= peer[rank].tp.gate_timeout_ms + 8u);
             free(peer[rank].in); free(peer[rank].out); close(fd[rank]);
         }
     }
