@@ -62283,8 +62283,12 @@ uint32_t ds4_think_max_min_context(void) {
     return DS4_THINK_MAX_MIN_CONTEXT;
 }
 
+bool ds4_think_max_downgrades(void) {
+    return DS4_MODEL_FAMILY != DS4_MODEL_FAMILY_DEEPSEEK41;
+}
+
 ds4_think_mode ds4_think_mode_for_context(ds4_think_mode mode, int ctx_size) {
-    if (DS4_MODEL_FAMILY != DS4_MODEL_FAMILY_DEEPSEEK41 &&
+    if (ds4_think_max_downgrades() &&
         mode == DS4_THINK_MAX && (uint32_t)(ctx_size > 0 ? ctx_size : 0) < DS4_THINK_MAX_MIN_CONTEXT) {
         return DS4_THINK_HIGH;
     }

@@ -18235,7 +18235,10 @@ static void test_reasoning_effort_mapping(void) {
     TEST_ASSERT(think_mode_from_enabled(false, DS4_THINK_LOW) == DS4_THINK_NONE);
     TEST_ASSERT(!strcmp(ds4_glm_reasoning_effort_text(DS4_THINK_LOW), "Reasoning Effort: High"));
     TEST_ASSERT(!strcmp(ds4_glm_reasoning_effort_text(DS4_THINK_MEDIUM), "Reasoning Effort: High"));
-    TEST_ASSERT(ds4_think_mode_for_context(DS4_THINK_MAX, 32768) == DS4_THINK_HIGH);
+    /* MAX downgrades below its minimum context only for families other than
+     * DeepSeek V4.1; ask the same predicate the implementation uses. */
+    TEST_ASSERT(ds4_think_mode_for_context(DS4_THINK_MAX, 32768) ==
+                (ds4_think_max_downgrades() ? DS4_THINK_HIGH : DS4_THINK_MAX));
     TEST_ASSERT(ds4_think_mode_for_context(DS4_THINK_MAX,
                                            (int)ds4_think_max_min_context()) == DS4_THINK_MAX);
 }
